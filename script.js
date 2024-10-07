@@ -2,6 +2,7 @@ let dino = document.getElementById('dino');
 let cactus = document.getElementById('cactus');
 let scoreElement = document.getElementById('score');
 let isJumping = false;
+let isGameOver = false;
 let score = 0;
 
 // Dino jump mechanics
@@ -19,6 +20,7 @@ function jump() {
         if (position >= 150) {
             clearInterval(upInterval);
 
+            // Dino coming back down
             let downInterval = setInterval(() => {
                 if (position <= 0) {
                     clearInterval(downInterval);
@@ -35,15 +37,31 @@ function jump() {
     }, 20);
 }
 
-// Score updates based on cactus position reset
-function updateScore() {
-    setInterval(() => {
-        // Increment score if the cactus reaches the start (loops back)
-        if (parseInt(window.getComputedStyle(cactus).getPropertyValue('right')) >= 590) {
+// Move the cactus (obstacle) with JavaScript
+function moveCactus() {
+    let cactusPosition = 600; // Start cactus off-screen
+    let gameSpeed = 10;
+
+    let cactusInterval = setInterval(() => {
+        if (cactusPosition < -20) {
+            // Cactus has gone off the left side of the screen
+            cactusPosition = 600; // Reset cactus position
             score++;
             scoreElement.innerText = score;
+            gameSpeed *= 1.02; // Gradually increase speed
         }
-    }, 100);
+
+        // Check for collision (simple bounding box check)
+        if (cactusPosition > 50 && cactusPosition < 90 && !isJumping) {
+            clearInterval(cactusInterval);
+            alert('Game Over! Your score is: ' + score);
+            isGameOver = true;
+            window.location.reload();
+        }
+
+        cactusPosition -= gameSpeed;
+        cactus.style.left = cactusPosition + 'px';
+    }, 20);
 }
 
-updateScore();
+moveCactus();
