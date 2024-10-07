@@ -74,8 +74,9 @@ function moveCactus() {
             cactusPosition = 600; // Reset cactus position
         }
 
-        // Check for collision
-        if (cactusPosition > 50 && cactusPosition < 90 && !isJumping) {
+        // ** Adjusted Collision Detection **
+        // Dino's hitbox (50px width) & Cactus hitbox (30px width)
+        if (cactusPosition > 50 && cactusPosition < 90 && parseInt(dino.style.bottom) < 40) {
             gameOver();
         }
 
