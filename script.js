@@ -1,12 +1,32 @@
 let dino = document.getElementById('dino');
 let cactus = document.getElementById('cactus');
 let scoreElement = document.getElementById('score');
+let highScoreElement = document.createElement('p'); // High Score element
+highScoreElement.innerText = "High Score: 0";
+document.body.appendChild(highScoreElement);
+
 let isJumping = false;
+let isGameOver = false;
 let score = 0;
+let highScore = localStorage.getItem('highScore') || 0;
+highScoreElement.innerText = `High Score: ${highScore}`;
+let gameSpeed = 10;
+let cactusInterval;
+let scoreInterval;
+
+// Start the game
+function startGame() {
+    score = 0;
+    gameSpeed = 10;
+    isGameOver = false;
+
+    moveCactus();
+    increaseScore();
+}
 
 // Function to handle jumping
 function jump() {
-    if (isJumping) return;  // Prevent double jump
+    if (isJumping || isGameOver) return;  // Prevent double jump or jumping after game over
 
     let position = 0;
     isJumping = true;
@@ -33,35 +53,30 @@ function jump() {
     }, 20);
 }
 
-// Jump on **spacebar** for desktop
+// Jump on spacebar for desktop
 document.addEventListener('keydown', function(event) {
     if (event.key === ' ') {
         jump();
     }
 });
 
-// Jump on **tap** for mobile
+// Jump on tap for mobile
 document.addEventListener('touchstart', function() {
     jump();
 });
 
-// Move the cactus (obstacle)
+// Move the cactus (obstacle) and handle collision
 function moveCactus() {
     let cactusPosition = 600;
-    let gameSpeed = 10;
 
-    let cactusInterval = setInterval(() => {
+    cactusInterval = setInterval(() => {
         if (cactusPosition < -20) {
-            cactusPosition = 600;  // Reset cactus position when it goes off screen
-            score++;
-            scoreElement.innerText = score;
+            cactusPosition = 600; // Reset cactus position
         }
 
         // Check for collision
         if (cactusPosition > 50 && cactusPosition < 90 && !isJumping) {
-            clearInterval(cactusInterval);
-            alert('Game Over! Your score is: ' + score);
-            window.location.reload();
+            gameOver();
         }
 
         cactusPosition -= gameSpeed;
@@ -69,4 +84,38 @@ function moveCactus() {
     }, 20);
 }
 
-moveCactus();
+// Constantly increase the score
+function increaseScore() {
+    scoreInterval = setInterval(() => {
+        if (isGameOver) {
+            clearInterval(scoreInterval);
+            return;
+        }
+
+        score++;
+        scoreElement.innerText = score;
+
+        // Gradually increase game speed
+        if (score % 100 === 0) {
+            gameSpeed += 1;
+        }
+    }, 100); // Score increases every 100 milliseconds
+}
+
+// End the game and check for high score
+function gameOver() {
+    clearInterval(cactusInterval);
+    clearInterval(scoreInterval);
+    isGameOver = true;
+
+    if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('highScore', highScore);
+        highScoreElement.innerText = `High Score: ${highScore}`;
+    }
+
+    alert('Game Over! Your score is: ' + score);
+    window.location.reload();
+}
+
+startGame();  // Start the game immediately
